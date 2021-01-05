@@ -78,3 +78,126 @@ public class ReimaginedFarming extends JavaPlugin implements Listener {
                 */
     }
 }
+/**
+ * Created by Alec McKinley on 11/14/2015.
+ */
+package me.alecmckinley.reimaginedfarming;
+ 
+import java.util.HashMap;
+import java.util.Map;
+ 
+/**
+ * An enum of all material IDs accepted by the official server and client
+ */
+ 
+public enum PlantTypes {
+    TALL_GRASS(1),//grass
+    WHEAT(5),//wheat
+    SEEDS(5),//wheat
+    CARROT(10),//carrot
+    CARROT_ITEM(10),//carrot
+    POTATO(10),//potato
+    POTATO_ITEM(10),//potato
+    SUGAR_CANE(15),//sugar
+    SUGAR_CANE_BLOCK(15),//sugar
+    PUMPKIN_SEEDS(20),//pumpkin
+    PUMPKIN_STEMS(20),//pumpkin
+    NETHER_WART(40);//nether wart
+ 
+    private static Map<String, PlantTypes> nameMap = new HashMap<>();
+ 
+    static {
+        for (PlantTypes plant : PlantTypes.values()) {
+            nameMap.put(plant.name(), plant);
+        }
+    }
+ 
+    private int growthTime;
+ 
+    PlantTypes(int time) {
+        growthTime = time;
+    }
+ 
+    public int getGrowthTime() {
+        return growthTime;
+    }
+ 
+    public static PlantTypes fromName(String name) {
+        return nameMap.get(name);
+    }
+ 
+}
+package me.alecmckinley.reimaginedfarming;
+ 
+import org.bukkit.Location;
+import org.json.simple.JSONObject;
+ 
+import java.util.Map;
+import java.util.UUID;
+ 
+@SuppressWarnings("unchecked")
+public class FarmPlot {
+ 
+    private JSONObject data = new JSONObject();
+ 
+    public FarmPlot(Location location, long time) {
+        Map<String, Object> serializedLoaction = location.serialize();
+        data.put("uuid", UUID.randomUUID().toString());
+        data.put("location", serializedLoaction);
+        data.put("timePlanted", time);
+    }
+ 
+    public JSONObject getData() {
+        return data;
+    }
+ 
+    public UUID getUUID() {
+        return UUID.fromString((String) data.get("uuid"));
+    }
+ 
+    public Location getLocation() {
+        Map<String, Object> serializedLocation = (Map<String, Object>) data.get("location");
+        return Location.deserialize(serializedLocation);
+    }
+ 
+    public long getPlantTime() {
+        return Integer.toUnsignedLong((int) data.get("timePlanted"));
+    }
+ package me.alecmckinley.reimaginedfarming;
+ 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+ 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+ 
+public class FileUtils {
+ 
+    public static void writeJSON(JSONObject config, File file) {
+        try {
+            FileWriter writer = new FileWriter(file);
+            writer.write(config.toJSONString());
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+ 
+    public static JSONObject readJSON(File file) {
+        if (file.exists()) {
+            JSONParser parser = new JSONParser();
+            try {
+                FileReader reader = new FileReader(file);
+                JSONObject fileContents = (JSONObject) parser.parse(reader);
+                reader.close();
+                return fileContents;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new JSONObject();
+    }
+ 
+}
